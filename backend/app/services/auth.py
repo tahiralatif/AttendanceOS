@@ -1,0 +1,98 @@
+"""Auth service: registration, login, token management."""
+from uuid import UUID
+from datetime import datetime
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.models.user import User, UserRole, UserStatus
+from app.models.tenant import Tenant
+from app.utils.security import (
+    hash_password, verify_password,
+    create_access_token, create_refresh_token, decode_token,
+)
+
+
+async def register_user(db: AsyncSession, email: str, password: str, full_name: str,
+                        org_name: str, org_slug: str) -> dict:
+    """Register a new user and organization."""
+    existing = await db.execute(select(User).where(User.email == email))
+    if existing.scalar_one_or_none():
+        raise ValueError("Email already registered")
+
+    existing_slug = await db.execute(select(Tenant).where(Tenant.slug == org_slug))
+    if existing_slug.scalar_one_or_none():
+        raise ValueError("Organization slug already taken")
+
+    tenant = Tenant(name=org_name, slug=org_slug)
+    db.add(tenant)
+    await db.flush()
+
+    user = User(
+        tenant_id=tenant.id,
+        email=email,
+        password_hash=hash_password(password),
+        full_name=full_name,
+        role=UserRole.ORG_ADMIN,
+        status=UserStatus.ACTIVE,
+        is_email_verified=True,
+    )
+    db.add(user)
+    await db.flush()
+
+    access_token = create_access_token(user.id, tenant.id, user.role.value)
+    refresh_token = create_refresh_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": user,
+        "tenant": tenant,
+    }
+
+
+async def login_user(db: AsyncSession, email: str, password: str) -> dict:
+    """Authenticate user and return tokens."""
+    result = await db.execute(
+        select(User).where(User.email == email).options(selectinload(User.tenant))
+    )
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(password, user.password_hash):
+        raise ValueError("Invalid email or password")
+
+    if user.status != UserStatus.ACTIVE:
+        raise ValueError("Account is not active")
+
+    user.last_login = datetime.utcnow()
+
+    access_token = create_access_token(user.id, user.tenant_id, user.role.value)
+    refresh_token = create_refresh_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": user,
+    }
+
+
+async def refresh_tokens(db: AsyncSession, refresh_token: str) -> dict:
+    """Refresh access token using refresh token."""
+    payload = decode_token(refresh_token)
+    if not payload or payload.get("type") != "refresh":
+        raise ValueError("Invalid refresh token")
+
+    user_id = UUID(payload["sub"])
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user or user.status != UserStatus.ACTIVE:
+        raise ValueError("User not found or inactive")
+
+    access_token = create_access_token(user.id, user.tenant_id, user.role.value)
+    new_refresh = create_refresh_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": new_refresh,
+    }
