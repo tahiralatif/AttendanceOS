@@ -1,5 +1,6 @@
 """Attendance API routes."""
 import uuid
+from uuid import UUID
 from datetime import date, datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query

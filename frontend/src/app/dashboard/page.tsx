@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [userName, setUserName] = useState("");
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API = "";
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");

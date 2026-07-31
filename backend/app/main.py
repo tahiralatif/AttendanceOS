@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import engine, Base
+# Import all models so SQLAlchemy metadata knows about them
+from app.models import tenant, user, employee, attendance, shift, ocr, audit  # noqa: F401
 from app.api.v1.auth import router as auth_router
 from app.api.v1.employees import router as employees_router
 from app.api.v1.attendance import router as attendance_router
@@ -13,6 +15,7 @@ from app.api.v1.attendance import router as attendance_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
+    # Create tables (use Alembic in production)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield

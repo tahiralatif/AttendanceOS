@@ -1,7 +1,7 @@
 """OCR submission model."""
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Float, JSON, ForeignKey, Enum as SAEnum
+from sqlalchemy import Column, String, DateTime, Float, JSON, ForeignKey, Enum as SAEnum, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -35,8 +35,8 @@ class OCRSubmission(Base):
     file_type = Column(SAEnum(OCRFileType), nullable=False)
     file_size = Column(Integer, nullable=True)
     status = Column(SAEnum(OCRStatus), nullable=False, default=OCRStatus.PENDING)
-    extracted_data = Column(JSON, nullable=True)
-    validated_data = Column(JSON, nullable=True)
+    extracted_data = Column(JSON, nullable=True)  # Raw OCR output
+    validated_data = Column(JSON, nullable=True)  # After normalization
     review_notes = Column(String(500), nullable=True)
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
