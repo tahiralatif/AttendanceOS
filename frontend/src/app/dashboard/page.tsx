@@ -47,6 +47,7 @@ export default function DashboardPage() {
 
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const headers = () => ({
@@ -119,31 +120,28 @@ export default function DashboardPage() {
 
   const stats = summary
     ? [
-        { label: "Present", value: summary.present, color: "bg-accent", icon: "✓" },
-        { label: "Absent", value: summary.absent, color: "bg-danger", icon: "✕" },
-        { label: "Late", value: summary.late, color: "bg-warning", icon: "⏰" },
-        { label: "On Leave", value: summary.on_leave, color: "bg-primary", icon: "🏖" },
+        { label: "Present", value: summary.present, icon: "✓" },
+        { label: "Absent", value: summary.absent, icon: "✕" },
+        { label: "Late", value: summary.late, icon: "⏰" },
+        { label: "On Leave", value: summary.on_leave, icon: "🏖" },
       ]
     : [];
 
-  const statusColor = (status: string) => {
+  const statusBadge = (status: string) => {
+    const base = "inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium";
     switch (status) {
-      case "present":
-        return "bg-accent/20 text-accent-dark";
-      case "late":
-        return "bg-warning/20 text-yellow-700";
-      case "absent":
-        return "bg-danger/10 text-danger";
-      default:
-        return "bg-primary/20 text-secondary";
+      case "present": return `${base} bg-accent/20 text-accent-dark`;
+      case "late": return `${base} bg-warning/20 text-yellow-700`;
+      case "absent": return `${base} bg-danger/10 text-danger`;
+      default: return `${base} bg-primary/20 text-secondary`;
     }
   };
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Header */}
+      {/* ── Header ── */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-sm">A</span>
@@ -151,7 +149,6 @@ export default function DashboardPage() {
             <span className="font-semibold text-sm sm:text-base text-text">Dashboard</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Full name hidden on xs, shown on sm+ */}
             <span className="text-xs sm:text-sm text-text-secondary hidden sm:inline">
               {userName || "Loading..."}
             </span>
@@ -164,9 +161,9 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-        {/* Welcome + Clock — stacks on mobile */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6 sm:mb-8 animate-fade-in">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* ── Welcome + Clock ── */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div className="text-center sm:text-left">
             <h1 className="text-xl sm:text-2xl font-bold text-text mb-1">
               Good {greeting}, {userName || "there"}
@@ -181,8 +178,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Clock Widget — full width on mobile */}
-          <div className="bg-white rounded-2xl border border-border p-4 sm:p-6 text-center animate-scale-in sm:w-auto w-full">
+          <div className="bg-white rounded-2xl border border-border p-4 sm:p-6 text-center sm:w-auto w-full">
             <div className="text-2xl sm:text-3xl font-mono font-bold text-text mb-3">
               {currentTime.toLocaleTimeString("en-US", {
                 hour: "2-digit",
@@ -205,13 +201,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats — 2 cols on mobile, 4 on md+ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8 stagger">
+        {/* ── Stats ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {stats.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl border border-border p-4 sm:p-5 hover:shadow-md transition-all hover:-translate-y-0.5 animate-slide-up"
-            >
+            <div key={i} className="bg-white rounded-2xl border border-border p-4 sm:p-5 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <span className="text-xs sm:text-sm text-text-secondary">{stat.label}</span>
                 <span className="text-base sm:text-lg">{stat.icon}</span>
@@ -221,22 +214,19 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Today's Attendance — Card on mobile, Table on md+ */}
-        <div className="bg-white rounded-2xl border border-border overflow-hidden animate-slide-up">
+        {/* ── Today's Attendance ── */}
+        <div className="bg-white rounded-2xl border border-border overflow-hidden">
           <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border">
             <h2 className="font-semibold text-sm sm:text-base text-text">Today&apos;s Attendance</h2>
           </div>
 
-          {/* Desktop table (hidden on mobile) */}
+          {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-cream-light">
                   {["Employee", "Clock In", "Clock Out", "Hours", "Status"].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider"
-                    >
+                    <th key={h} className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                       {h}
                     </th>
                   ))}
@@ -256,10 +246,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-cream flex items-center justify-center shrink-0">
                             <span className="text-secondary font-medium text-xs">
-                              {record.employee_name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                              {record.employee_name.split(" ").map((n) => n[0]).join("")}
                             </span>
                           </div>
                           <div>
@@ -270,15 +257,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-text">{record.clock_in || "—"}</td>
                       <td className="px-6 py-4 text-sm text-text">{record.clock_out || "—"}</td>
-                      <td className="px-6 py-4 text-sm text-text">
-                        {record.total_hours ? `${record.total_hours}h` : "—"}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-text">{record.total_hours ? `${record.total_hours}h` : "—"}</td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor(record.status)}`}
-                        >
-                          {record.status}
-                        </span>
+                        <span className={statusBadge(record.status)}>{record.status}</span>
                       </td>
                     </tr>
                   ))
@@ -287,7 +268,7 @@ export default function DashboardPage() {
             </table>
           </div>
 
-          {/* Mobile cards (hidden on md+) */}
+          {/* Mobile cards */}
           <div className="md:hidden divide-y divide-border">
             {todayRecords.length === 0 ? (
               <div className="px-4 py-10 text-center text-text-muted text-sm">
@@ -300,10 +281,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-cream flex items-center justify-center shrink-0">
                         <span className="text-secondary font-medium text-xs">
-                          {record.employee_name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {record.employee_name.split(" ").map((n) => n[0]).join("")}
                         </span>
                       </div>
                       <div className="min-w-0">
@@ -311,13 +289,9 @@ export default function DashboardPage() {
                         <p className="text-xs text-text-muted">{record.employee_code}</p>
                       </div>
                     </div>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-2 ${statusColor(record.status)}`}
-                    >
-                      {record.status}
-                    </span>
+                    <span className={`${statusBadge(record.status)} shrink-0 ml-2`}>{record.status}</span>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-text-secondary pl-10.5">
+                  <div className="flex items-center gap-4 text-xs text-text-secondary ml-10">
                     <span>In: <span className="text-text font-medium">{record.clock_in || "—"}</span></span>
                     <span>Out: <span className="text-text font-medium">{record.clock_out || "—"}</span></span>
                     <span>Hrs: <span className="text-text font-medium">{record.total_hours ? `${record.total_hours}h` : "—"}</span></span>
