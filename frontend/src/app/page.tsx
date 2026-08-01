@@ -67,22 +67,31 @@ export default function LandingPage() {
 
       {/* ════ HERO ════ */}
       <section className="relative pt-28 pb-20 sm:pt-32 sm:pb-24 lg:pt-36 lg:pb-28 overflow-hidden">
+        {/* Subtle background blobs */}
         <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/[0.05] rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+            {/* ── Left: Copy ── */}
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-cream/70 border border-cream px-4 py-1.5 rounded-full mb-6 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 <span className="text-xs font-semibold text-secondary tracking-wide uppercase">Enterprise Attendance Platform</span>
               </div>
+
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-text leading-[1.08] tracking-tight mb-5 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
                 Attendance management{" "}
-                <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">that actually works</span>
+                <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                  that actually works
+                </span>
               </h1>
+
               <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-                OCR-powered imports, real-time tracking, smart analytics. Replace spreadsheets with a platform your HR team will love.
+                OCR-powered imports, real-time tracking, smart analytics.
+                Replace spreadsheets with a platform your HR team will love.
               </p>
+
               <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
                 <Link href="/register" className="w-full sm:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark text-white px-7 py-3.5 rounded-xl font-semibold text-sm hover:shadow-xl hover:shadow-primary/25 transition-all duration-200">
                   Start Free Trial
@@ -93,10 +102,15 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
+
+            {/* ── Right: Dashboard Preview ── */}
             <div className="flex-1 w-full max-w-lg lg:max-w-none animate-fade-in-up" style={{ animationDelay: "200ms" }}>
               <div className="relative">
+                {/* Glow behind card */}
                 <div className="absolute -inset-4 bg-gradient-to-br from-primary/15 via-accent/10 to-cream/30 rounded-3xl blur-2xl opacity-60" />
+
                 <div className="relative bg-white rounded-2xl border border-black/[0.06] shadow-2xl shadow-black/[0.06] p-5 sm:p-6">
+                  {/* Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div>
                       <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Today&apos;s Overview</p>
@@ -107,6 +121,8 @@ export default function LandingPage() {
                       <span className="text-[11px] font-bold text-emerald-700">Live</span>
                     </div>
                   </div>
+
+                  {/* Stats */}
                   <div className="grid grid-cols-4 gap-2.5 mb-5">
                     {stats.map((s, i) => (
                       <div key={i} className={`${s.bg} rounded-xl p-3 text-center`}>
@@ -115,6 +131,8 @@ export default function LandingPage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Table */}
                   <div className="border border-black/[0.05] rounded-xl overflow-hidden mb-5">
                     <div className="grid grid-cols-[1fr_70px_70px] px-3.5 py-2 bg-surface text-[10px] font-bold text-text-muted uppercase tracking-wider">
                       <span>Employee</span>
@@ -141,6 +159,8 @@ export default function LandingPage() {
                       );
                     })}
                   </div>
+
+                  {/* Chart */}
                   <div className="flex items-end gap-[3px] h-14">
                     {barData.map((h, i) => (
                       <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary/50 to-primary/25 transition-all" style={{ height: `${h}%` }} />
@@ -152,6 +172,8 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* Floating: 92% badge */}
                 <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-white rounded-xl shadow-lg shadow-black/[0.08] border border-black/[0.06] px-3 py-2 flex items-center gap-2 z-10">
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                     <Star size={14} className="text-emerald-600 fill-emerald-200" />
@@ -161,6 +183,8 @@ export default function LandingPage() {
                     <p className="text-[9px] font-semibold text-text-muted">Attendance</p>
                   </div>
                 </div>
+
+                {/* Floating: OCR badge */}
                 <div className="absolute -bottom-3 -left-3 sm:-bottom-4 sm:-left-4 bg-white rounded-xl shadow-lg shadow-black/[0.08] border border-black/[0.06] px-3 py-2 flex items-center gap-2 z-10">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                     <FileSpreadsheet size={14} className="text-primary-dark" />
@@ -180,12 +204,21 @@ export default function LandingPage() {
       <section id="features" className="py-20 sm:py-24 lg:py-28 bg-gradient-to-b from-transparent via-cream-light/50 to-transparent">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text tracking-tight mb-3 animate-fade-in-up">Everything you need</h2>
-            <p className="text-sm sm:text-base text-text-secondary animate-fade-in-up" style={{ animationDelay: "100ms" }}>Built for teams that take attendance seriously</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text tracking-tight mb-3 animate-fade-in-up">
+              Everything you need
+            </h2>
+            <p className="text-sm sm:text-base text-text-secondary animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+              Built for teams that take attendance seriously
+            </p>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {features.map((f, i) => (
-              <div key={i} className="group bg-white p-6 rounded-2xl border border-black/[0.05] hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/[0.06] hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
+              <div
+                key={i}
+                className="group bg-white p-6 rounded-2xl border border-black/[0.05] hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/[0.06] hover:-translate-y-1 animate-fade-in-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-cream/60 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-primary/5 transition-colors">
                   <f.icon size={20} className="text-primary-dark" />
                 </div>
@@ -200,8 +233,12 @@ export default function LandingPage() {
       {/* ════ CTA ════ */}
       <section className="py-20 sm:py-24 lg:py-28">
         <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text tracking-tight mb-4 animate-fade-in-up">Ready to modernize attendance?</h2>
-          <p className="text-sm sm:text-base text-text-secondary mb-8 sm:mb-10 animate-fade-in-up" style={{ animationDelay: "100ms" }}>Free for up to 10 employees. No credit card required.</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text tracking-tight mb-4 animate-fade-in-up">
+            Ready to modernize attendance?
+          </h2>
+          <p className="text-sm sm:text-base text-text-secondary mb-8 sm:mb-10 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+            Free for up to 10 employees. No credit card required.
+          </p>
           <div className="animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <Link href="/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary-dark text-white px-8 py-4 rounded-xl font-semibold text-sm sm:text-base hover:shadow-xl hover:shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5">
               Get Started — It&apos;s Free

@@ -34,3 +34,10 @@ class EmployeeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class EmployeeWithUser(EmployeeResponse):
+    user: "UserResponse"
+
+    class Config:
+        from_attributes = True

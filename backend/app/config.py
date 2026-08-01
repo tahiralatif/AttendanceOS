@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     S3_ENDPOINT_URL: Optional[str] = None  # For MinIO
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001", "https://attendance.14.jugaar.ai", "http://attendance.14.jugaar.ai"]
 
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100

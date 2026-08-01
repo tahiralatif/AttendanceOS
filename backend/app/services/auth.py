@@ -16,18 +16,22 @@ from app.utils.security import (
 async def register_user(db: AsyncSession, email: str, password: str, full_name: str,
                         org_name: str, org_slug: str) -> dict:
     """Register a new user and organization."""
+    # Check if email already exists
     existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
         raise ValueError("Email already registered")
 
+    # Check if slug is taken
     existing_slug = await db.execute(select(Tenant).where(Tenant.slug == org_slug))
     if existing_slug.scalar_one_or_none():
         raise ValueError("Organization slug already taken")
 
+    # Create tenant
     tenant = Tenant(name=org_name, slug=org_slug)
     db.add(tenant)
-    await db.flush()
+    await db.flush()  # Get tenant ID
 
+    # Create user (org admin)
     user = User(
         tenant_id=tenant.id,
         email=email,
@@ -35,11 +39,12 @@ async def register_user(db: AsyncSession, email: str, password: str, full_name: 
         full_name=full_name,
         role=UserRole.ORG_ADMIN,
         status=UserStatus.ACTIVE,
-        is_email_verified=True,
+        is_email_verified=True,  # Auto-verify for now
     )
     db.add(user)
     await db.flush()
 
+    # Generate tokens
     access_token = create_access_token(user.id, tenant.id, user.role.value)
     refresh_token = create_refresh_token(user.id)
 
@@ -64,8 +69,10 @@ async def login_user(db: AsyncSession, email: str, password: str) -> dict:
     if user.status != UserStatus.ACTIVE:
         raise ValueError("Account is not active")
 
+    # Update last login
     user.last_login = datetime.utcnow()
 
+    # Generate tokens
     access_token = create_access_token(user.id, user.tenant_id, user.role.value)
     refresh_token = create_refresh_token(user.id)
 

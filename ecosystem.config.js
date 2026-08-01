@@ -17,10 +17,10 @@ module.exports = {
       name: 'aos-frontend',
       cwd: '/root/.openclaw/workspace/AttendanceOS/frontend',
       script: 'node_modules/.bin/next',
-      args: 'dev -p 3006',
+      args: 'start -p 3006',
       env: {
         PORT: '3006',
-        NODE_ENV: 'development',
+        NODE_ENV: 'production',
       },
       max_memory_restart: '512M',
     },

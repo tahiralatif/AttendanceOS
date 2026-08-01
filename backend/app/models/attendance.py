@@ -46,7 +46,7 @@ class AttendanceRecord(Base):
     source = Column(SAEnum(AttendanceSource), nullable=False, default=AttendanceSource.MANUAL)
     ocr_submission_id = Column(UUID(as_uuid=True), ForeignKey("ocr_submissions.id"), nullable=True)
     shift_id = Column(UUID(as_uuid=True), ForeignKey("shifts.id"), nullable=True)
-    location_in = Column(JSON, nullable=True)
+    location_in = Column(JSON, nullable=True)  # {"lat": float, "lng": float}
     location_out = Column(JSON, nullable=True)
     ip_address = Column(String(45), nullable=True)
     device_info = Column(String(255), nullable=True)
@@ -56,6 +56,7 @@ class AttendanceRecord(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Unique constraint: one record per employee per day
     __table_args__ = (
         {"comment": "Core attendance records with event sourcing support"},
     )
@@ -68,9 +69,9 @@ class AttendanceEvent(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     attendance_id = Column(UUID(as_uuid=True), ForeignKey("attendance_records.id"), nullable=False, index=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    event_type = Column(String(50), nullable=False)
-    payload = Column(JSON, nullable=False)
-    actor_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    source = Column(String(50), nullable=True)
+    event_type = Column(String(50), nullable=False)  # clock_in, clock_out, edited, approved, etc.
+    payload = Column(JSON, nullable=False)  # Full event data
+    actor_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # Who made the change
+    source = Column(String(50), nullable=True)  # web, mobile, api, ocr
     ip_address = Column(String(45), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
