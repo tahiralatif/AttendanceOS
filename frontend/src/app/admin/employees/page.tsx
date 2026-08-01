@@ -28,11 +28,22 @@ interface Employee {
 interface NewEmployee {
   full_name: string;
   email: string;
-  password: string;
   employee_code: string;
   department: string;
   designation: string;
-  join_date: string;
+}
+
+interface Invitation {
+  id: string;
+  email: string;
+  full_name: string;
+  employee_code: string | null;
+  department: string | null;
+  designation: string | null;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
 }
 
 const API = "";
@@ -49,11 +60,14 @@ export default function AdminEmployeesPage() {
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [newEmp, setNewEmp] = useState<NewEmployee>({
-    full_name: "", email: "", password: "", employee_code: "",
-    department: "", designation: "", join_date: "",
-  });
   const [importFile, setImportFile] = useState<File | null>(null);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+
+  const [newEmp, setNewEmp] = useState<NewEmployee>({
+    full_name: "", email: "", employee_code: "",
+    department: "", designation: "",
+  });
 
   const headers = useCallback(() => ({
     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -70,29 +84,47 @@ export default function AdminEmployeesPage() {
     setLoading(false);
   }, [headers]);
 
+  const fetchInvitations = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/v1/employees/invitations`, { headers: headers() });
+      if (res.ok) {
+        const data = await res.json();
+        setInvitations(Array.isArray(data) ? data : []);
+      }
+    } catch {}
+  }, [headers]);
+
   useEffect(() => {
     fetchEmployees();
-  }, [fetchEmployees]);
+    fetchInvitations();
+  }, [fetchEmployees, fetchInvitations]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/v1/employees/create-with-user`, {
+      const res = await fetch(`${API}/api/v1/employees/invite`, {
         method: "POST",
         headers: { ...headers(), "Content-Type": "application/json" },
-        body: JSON.stringify(newEmp),
+        body: JSON.stringify({
+          email: newEmp.email,
+          full_name: newEmp.full_name,
+          employee_code: newEmp.employee_code || undefined,
+          department: newEmp.department || undefined,
+          designation: newEmp.designation || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.detail || "Failed to create employee");
+        setError(data.detail || "Failed to send invitation");
         return;
       }
-      setSuccess(`Employee created! Temp password: ${data.temp_password}`);
-      setShowModal(false);
-      setNewEmp({ full_name: "", email: "", password: "", employee_code: "", department: "", designation: "", join_date: "" });
+      setInviteLink(data.invite_link);
+      setSuccess(`Invitation sent to ${data.email}!`);
+      setNewEmp({ full_name: "", email: "", employee_code: "", department: "", designation: "" });
       fetchEmployees();
+      fetchInvitations();
     } catch {
       setError("Network error");
     } finally {
@@ -151,6 +183,7 @@ export default function AdminEmployeesPage() {
   };
 
   const departments = [...new Set(employees.map((e) => e.department).filter(Boolean))];
+  const pendingInvites = invitations.filter((i) => i.status === "pending");
   const filtered = employees.filter((e) => {
     const matchSearch = !search || e.full_name.toLowerCase().includes(search.toLowerCase()) || e.email.toLowerCase().includes(search.toLowerCase()) || e.employee_code?.toLowerCase().includes(search.toLowerCase());
     const matchDept = !deptFilter || e.department === deptFilter;
@@ -171,7 +204,7 @@ export default function AdminEmployeesPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8 animate-fade-in">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-text tracking-tight">Employees</h1>
-          <p className="text-sm text-text-secondary mt-1">{filtered.length} total employees</p>
+          <p className="text-sm text-text-secondary mt-1">{filtered.length} active employees{pendingInvites.length > 0 ? ` · ${pendingInvites.length} pending` : ""}</p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
@@ -233,6 +266,41 @@ export default function AdminEmployeesPage() {
           <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         </div>
       </div>
+
+      {/* Pending Invitations */}
+      {pendingInvites.length > 0 && (
+        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+          <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+            <div className="px-6 py-3 bg-amber-50/50 border-b border-black/[0.04]">
+              <p className="text-sm font-bold text-amber-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Pending Invitations ({pendingInvites.length})
+              </p>
+            </div>
+            <div className="divide-y divide-black/[0.04]">
+              {pendingInvites.map((inv) => (
+                <div key={inv.id} className="px-6 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <span className="text-amber-700 font-bold text-xs">{inv.full_name?.split(" ").map((n: string) => n[0]).join("")}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-text truncate">{inv.full_name}</p>
+                      <p className="text-[11px] text-text-muted font-medium">{inv.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">Invited</span>
+                    <span className="text-[11px] text-text-muted font-medium hidden sm:block">
+                      Expires {new Date(inv.expires_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden animate-fade-in-up" style={{ animationDelay: "200ms" }}>
@@ -327,15 +395,13 @@ export default function AdminEmployeesPage() {
               <h3 className="font-bold text-base text-text tracking-tight">Add Employee</h3>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-surface transition-colors text-text-muted"><X size={18} /></button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <form onSubmit={handleInvite} className="p-6 space-y-4">
               {[
                 { label: "Full Name", key: "full_name", type: "text", required: true },
                 { label: "Email", key: "email", type: "email", required: true },
-                { label: "Password", key: "password", type: "password", required: true },
-                { label: "Employee Code", key: "employee_code", type: "text", required: true },
+                { label: "Employee Code", key: "employee_code", type: "text", required: false },
                 { label: "Department", key: "department", type: "text", required: false },
                 { label: "Designation", key: "designation", type: "text", required: false },
-                { label: "Join Date", key: "join_date", type: "date", required: false },
               ].map((f) => (
                 <div key={f.key}>
                   <label className="block text-sm font-semibold text-text mb-1.5">{f.label}</label>
@@ -347,14 +413,33 @@ export default function AdminEmployeesPage() {
                   />
                 </div>
               ))}
+
+              {inviteLink && (
+                <div>
+                  <label className="block text-sm font-semibold text-text mb-1.5">Invitation Link</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text" readOnly value={inviteLink}
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-surface/50 text-text text-sm font-mono"
+                    />
+                    <button type="button" onClick={() => { navigator.clipboard.writeText(inviteLink); setSuccess("Copied!"); setTimeout(() => setSuccess(""), 2000); }}
+                      className="px-3 py-2.5 rounded-xl border border-border bg-surface/50 text-text-secondary text-sm font-semibold hover:bg-surface transition-all">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-border text-text-secondary text-sm font-semibold hover:bg-surface transition-all">
-                  Cancel
+                <button type="button" onClick={() => { setShowModal(false); setInviteLink(null); }} className="flex-1 px-4 py-2.5 rounded-xl border border-border text-text-secondary text-sm font-semibold hover:bg-surface transition-all">
+                  {inviteLink ? "Close" : "Cancel"}
                 </button>
-                <button type="submit" disabled={creating}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary/25 disabled:opacity-50 transition-all">
-                  {creating ? <><Loader2 size={14} className="animate-spin" /> Creating...</> : "Create Employee"}
-                </button>
+                {!inviteLink && (
+                  <button type="submit" disabled={creating}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary/25 disabled:opacity-50 transition-all">
+                    {creating ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : "Send Invitation"}
+                  </button>
+                )}
               </div>
             </form>
           </div>

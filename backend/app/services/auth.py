@@ -1,4 +1,5 @@
 """Auth service: registration, login, token management."""
+import re
 from uuid import UUID
 from datetime import datetime
 from sqlalchemy import select
@@ -13,18 +14,38 @@ from app.utils.security import (
 )
 
 
+def generate_slug(name: str) -> str:
+    """Auto-generate a tenant slug from organization name."""
+    slug = name.lower().strip()
+    slug = re.sub(r'[^a-z0-9\s-]', '', slug)
+    slug = re.sub(r'\s+', '-', slug)
+    slug = re.sub(r'-+', '-', slug)
+    slug = slug.strip('-')
+    if len(slug) > 40:
+        slug = slug[:40]
+    return slug
+
+
 async def register_user(db: AsyncSession, email: str, password: str, full_name: str,
-                        org_name: str, org_slug: str) -> dict:
+                        org_name: str, org_slug: str = None) -> dict:
     """Register a new user and organization."""
     # Check if email already exists
     existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
         raise ValueError("Email already registered")
 
-    # Check if slug is taken
+    # Auto-generate slug if not provided
+    if not org_slug:
+        org_slug = generate_slug(org_name)
+        if not org_slug:
+            org_slug = "org"
+
+    # Check if slug is taken; if so, append random suffix
     existing_slug = await db.execute(select(Tenant).where(Tenant.slug == org_slug))
     if existing_slug.scalar_one_or_none():
-        raise ValueError("Organization slug already taken")
+        import secrets as _secrets
+        suffix = _secrets.token_hex(3)
+        org_slug = f"{org_slug}-{suffix}"
 
     # Create tenant
     tenant = Tenant(name=org_name, slug=org_slug)

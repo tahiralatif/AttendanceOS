@@ -6,12 +6,13 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import engine, Base
 # Import all models so SQLAlchemy metadata knows about them
-from app.models import tenant, user, employee, attendance, shift, ocr, audit, department  # noqa: F401
+from app.models import tenant, user, employee, attendance, shift, ocr, audit, department, invitation  # noqa: F401
 from app.api.v1.auth import router as auth_router
 from app.api.v1.employees import router as employees_router
 from app.api.v1.attendance import router as attendance_router
 from app.api.v1.admin import router as admin_router
 from app.api.v1.departments import router as departments_router
+from app.api.v1.invitations import router as invitations_router
 
 
 @asynccontextmanager
@@ -42,10 +43,12 @@ app.add_middleware(
 
 # API Routes
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
+app.include_router(invitations_router, prefix=settings.API_V1_PREFIX)  # Must be before employees_router to avoid /{employee_id} conflict
 app.include_router(employees_router, prefix=settings.API_V1_PREFIX)
 app.include_router(attendance_router, prefix=settings.API_V1_PREFIX)
 app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
 app.include_router(departments_router, prefix=settings.API_V1_PREFIX)
+app.include_router(invitations_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

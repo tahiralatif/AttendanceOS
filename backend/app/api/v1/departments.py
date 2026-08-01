@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.department import Department
 from app.models.user import User, UserRole
-from app.api.deps import require_role
+from app.api.deps import require_role, get_current_tenant
 
 router = APIRouter(prefix="/departments", tags=["Departments"])
 
@@ -44,7 +44,7 @@ class DeptResponse(BaseModel):
 
 @router.get("", response_model=list[DeptResponse])
 async def list_departments(
-    tenant_id: UUID = Depends(lambda user: user.tenant_id),
+    tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_role(UserRole.ORG_ADMIN, UserRole.HR_ADMIN)),
 ):
@@ -60,7 +60,7 @@ async def list_departments(
 @router.post("", response_model=DeptResponse, status_code=201)
 async def create_department(
     data: DeptCreate,
-    tenant_id: UUID = Depends(lambda user: user.tenant_id),
+    tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_role(UserRole.ORG_ADMIN, UserRole.HR_ADMIN)),
 ):
@@ -89,7 +89,7 @@ async def create_department(
 async def update_department(
     dept_id: UUID,
     data: DeptUpdate,
-    tenant_id: UUID = Depends(lambda user: user.tenant_id),
+    tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_role(UserRole.ORG_ADMIN, UserRole.HR_ADMIN)),
 ):
@@ -110,7 +110,7 @@ async def update_department(
 @router.delete("/{dept_id}", status_code=204)
 async def delete_department(
     dept_id: UUID,
-    tenant_id: UUID = Depends(lambda user: user.tenant_id),
+    tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_role(UserRole.ORG_ADMIN, UserRole.HR_ADMIN)),
 ):

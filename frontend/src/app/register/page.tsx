@@ -9,15 +9,10 @@ const perks = ["No credit card required", "Free for up to 10 employees", "Cancel
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", organization_name: "", organization_slug: "" });
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", organization_name: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
-
-  const handleOrgName = (name: string) => {
-    const slug = name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 40);
-    setForm({ ...form, organization_name: name, organization_slug: slug });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,13 +22,13 @@ export default function RegisterPage() {
       const res = await fetch(`${window.location.origin}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.detail || "Registration failed"); return; }
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
-      router.push("/dashboard");
+      router.push("/admin");
     } catch { setError("Network error. Please try again."); }
     finally { setLoading(false); }
   };
@@ -83,8 +78,8 @@ export default function RegisterPage() {
             <span className="font-bold text-lg text-text tracking-tight">AttendanceOS</span>
           </div>
 
-          <h2 className="text-2xl font-extrabold text-text tracking-tight mb-1.5">Create your account</h2>
-          <p className="text-sm text-text-secondary mb-7">Set up your organization in seconds</p>
+          <h2 className="text-2xl font-extrabold text-text tracking-tight mb-1.5">Register your company</h2>
+          <p className="text-sm text-text-secondary mb-7">Set up your organization and start tracking attendance</p>
 
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl mb-5 font-medium animate-fade-in">
@@ -112,17 +107,14 @@ export default function RegisterPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-text mb-1.5">Organization Name</label>
+              <label className="block text-sm font-semibold text-text mb-1.5">Company Name</label>
               <div className="relative">
                 <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input type="text" required value={form.organization_name}
-                  onChange={(e) => handleOrgName(e.target.value)}
+                  onChange={(e) => setForm({ ...form, organization_name: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white text-text placeholder-text-muted/60 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                   placeholder="Acme Corp" />
               </div>
-              {form.organization_slug && (
-                <p className="text-[11px] text-text-muted mt-1.5 ml-1">Slug: <span className="font-mono text-text-secondary">{form.organization_slug}</span></p>
-              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-text mb-1.5">Password</label>

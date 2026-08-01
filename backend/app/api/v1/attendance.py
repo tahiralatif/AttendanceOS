@@ -22,7 +22,7 @@ router = APIRouter(prefix="/attendance", tags=["Attendance"])
 
 @router.post("/clock-in", response_model=AttendanceRecordResponse)
 async def clock_in(
-    data: ClockInRequest,
+    data: ClockInRequest = ClockInRequest(),
     tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -113,7 +113,7 @@ async def clock_in(
 
 @router.post("/clock-out", response_model=AttendanceRecordResponse)
 async def clock_out(
-    data: ClockOutRequest,
+    data: ClockOutRequest = ClockOutRequest(),
     tenant_id: UUID = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
